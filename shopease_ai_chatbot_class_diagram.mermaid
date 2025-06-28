@@ -1,0 +1,142 @@
+classDiagram
+    class UserProfile {
+        -String userId
+        -String name
+        -String preferredLanguage
+        -List<Order> recentOrders
+        -List<Ticket> pastIssues
+        +getUserInfo(userId: String): UserProfile
+        +updateLanguagePreference(language: String): void
+        +getOrderHistory(): List<Order>
+    }
+
+    class Order {
+        -String orderId
+        -String userId
+        -String productName
+        -String status
+        -Date expectedDelivery
+        +getOrderDetails(orderId: String): Order
+        +updateOrderStatus(status: String): void
+        +getDeliveryInfo(): Map<String, Object>
+    }
+
+    class ChatSession {
+        -String chatId
+        -String userId
+        -List<Message> messages
+        -Boolean isActive
+        -Date startTime
+        -Date endTime
+        -String language
+        +createSession(userId: String): ChatSession
+        +addMessage(message: Message): void
+        +getMessages(): List<Message>
+        +endSession(): void
+        +translateMessage(message: String, targetLanguage: String): String
+    }
+
+    class Message {
+        -String messageId
+        -String chatId
+        -String content
+        -String sender
+        -Date timestamp
+        -String language
+        +createMessage(content: String, sender: String): Message
+        +getFormatted(): Map<String, Object>
+    }
+
+    class AIService {
+        -String modelName
+        -Map<String, Object> contextData
+        +processQuery(query: String, context: Map<String, Object>): AIResponse
+        +generateResponse(intent: String, context: Map<String, Object>): String
+        +getConfidenceScore(response: String, query: String): Float
+        +detectIntent(query: String): String
+        +summarizeConversation(messages: List<Message>): String
+    }
+
+    class AIResponse {
+        -String content
+        -Float confidenceScore
+        -String detectedIntent
+        -Boolean needsEscalation
+        -Map<String, Object> suggestedActions
+        +formatResponse(): String
+        +requiresEscalation(): Boolean
+    }
+
+    class EscalationService {
+        -Float confidenceThreshold
+        -List<String> escalationKeywords
+        +checkForEscalation(query: String, aiResponse: AIResponse): Boolean
+        +createTicket(userId: String, issue: String): Ticket
+        +generateSummary(chatSession: ChatSession): String
+    }
+
+    class Ticket {
+        -String ticketId
+        -String userId
+        -String issueSummary
+        -Date timestamp
+        -String status
+        -String assignedAgentId
+        -String chatTranscript
+        +createTicket(issueData: Map<String, Object>): Ticket
+        +updateStatus(status: String): void
+        +assignAgent(agentId: String): void
+        +getFullDetails(): Map<String, Object>
+    }
+
+    class AnalyticsEngine {
+        +trackInteraction(userId: String, interaction: Map<String, Object>): void
+        +getTopIssues(startDate: Date, endDate: Date): List<Map<String, Object>>
+        +getEscalationMetrics(): Map<String, Object>
+        +getAverageHandlingTime(): Float
+        +getLanguageDistribution(): Map<String, Integer>
+        +getProductMentions(): Map<String, Integer>
+    }
+
+    class Database {
+        +connect(): void
+        +disconnect(): void
+        +query(collection: String, filter: Map<String, Object>): List<Map<String, Object>>
+        +insert(collection: String, document: Map<String, Object>): void
+        +update(collection: String, id: String, updates: Map<String, Object>): void
+        +delete(collection: String, id: String): void
+    }
+
+    class TranslationService {
+        -List<String> supportedLanguages
+        +detectLanguage(text: String): String
+        +translate(text: String, targetLanguage: String): String
+        +getSupportedLanguages(): List<String>
+    }
+
+    class ChatUI {
+        -String sessionId
+        -String currentLanguage
+        +renderMessage(message: Message): void
+        +showTypingIndicator(isTyping: Boolean): void
+        +displayQuickReplies(options: List<String>): void
+        +showUserContext(userProfile: UserProfile): void
+        +toggleLanguageSelector(): void
+        +showEscalationNotice(ticketId: String): void
+    }
+
+    UserProfile "1" -- "*" Order: has
+    UserProfile "1" -- "*" Ticket: has
+    ChatSession "1" -- "*" Message: contains
+    ChatSession "1" -- "1" UserProfile: associated with
+    AIService -- AIResponse: produces
+    EscalationService -- Ticket: creates
+    ChatSession -- AIService: processes queries through
+    AIService -- TranslationService: uses
+    ChatUI -- ChatSession: displays
+    EscalationService -- ChatSession: analyzes
+    AnalyticsEngine -- ChatSession: analyzes
+    Database -- UserProfile: stores
+    Database -- Order: stores
+    Database -- Ticket: stores
+    Database -- Message: stores

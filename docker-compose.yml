@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./server/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/shopease
+      - PORT=3000
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+      - libretranslate
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  libretranslate:
+    image: libretranslate/libretranslate
+    ports:
+      - "5001:5000"
+    environment:
+      - LT_LOAD_ONLY=en,es,fr,de,it,pt,ru,zh,ja,ko
+      - LT_DISABLE_WEB_UI=true
+      - LT_DISABLE_FILES_TRANSLATION=true
+      - LT_DISABLE_API_KEY=true
+    restart: unless-stopped
+
+volumes:
+  mongodb_data: 
